@@ -12,14 +12,15 @@ Extract features from any video while streaming from any internet URL.
 - YouTube
 - Any video from a URL
 
-## To run lit_video_stream
+## Install this component
 First, install lit_video_stream (warning: this app has not been officially approved on the lightning gallery):
 
 ```bash
 lightning install component https://github.com/theUser/lit_video_stream
 ```
 
-Once the app is installed, use it in an app:
+## Use the component
+Here's an example of using this component in an app
 
 ```python
 import lightning as L
