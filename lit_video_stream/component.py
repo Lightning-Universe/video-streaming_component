@@ -15,7 +15,7 @@ class LitVideoStream(L.LightningWork):
         stream_processor=None, 
         num_batch_frames=-1,
         process_every_n_frame=1,
-        prog_bar_fx=None,
+        prog_bar=None,
         length_limit=None
     ):
         """Downloads a video from a URL and extracts features using any custom model.
@@ -29,7 +29,7 @@ class LitVideoStream(L.LightningWork):
                 to download before processing it. If memory constrained on the machine, use smaller batch sizes.
             process_every_n_frame: process every "n" frames. if skip_frames = 0, don't skip frames (ie: process every frame), 
                 if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
-            prog_bar_fx: function called with every new frame to update the progress bar.
+            prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
         super().__init__()
@@ -45,7 +45,13 @@ class LitVideoStream(L.LightningWork):
         if self.process_every_n_frame < 1:
             raise SystemError(f'process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}')
 
-        self._prog_bar_fx = prog_bar_fx if not None else lambda *x: x
+        class NoPBAR:
+            def update(self, *args):
+                pass
+            def reset(self, *args):
+                pass
+
+        self._prog_bar = prog_bar if prog_bar is not None else NoPBAR()
 
         # nothing mod infinity is ever zero... it means, the whole video will process at once when it's downloaded.
         if num_batch_frames == -1:
@@ -102,9 +108,10 @@ class LitVideoStream(L.LightningWork):
         current_frame = 0
         unprocessed_frames = []
         features = []
+        self._prog_bar.reset(total_frames)
         while capture.isOpened():
             # update the progress
-            self._prog_bar_fx(current_frame, total_frames)
+            self._prog_bar.update(current_frame)
 
             # get the frame
             ret, frame = capture.read()
