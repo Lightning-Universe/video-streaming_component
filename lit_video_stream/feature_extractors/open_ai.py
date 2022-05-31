@@ -1,6 +1,19 @@
 import clip as openai_clip
-import math
 import torch
+import pytorch_lightning as pl
+
+
+class LightningInferenceModel(pl.LightningModule):
+    def __init__(self, model, preprocess) -> None:
+        super().__init__()
+        self.model = model
+        self.preprocess = preprocess
+
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
+        batch_features = self.model.encode_image(batch)
+        batch_features /= batch_features.norm(dim=-1, keepdim=True)
+
+        return batch_features
 
 
 class OpenAIClip:
@@ -9,26 +22,22 @@ class OpenAIClip:
         self.model_type = model_type
         self.batch_size = batch_size
         self.feature_dim = feature_dim
-        self.model = None
-        self.preprocess = None
+
+        model, preprocess = openai_clip.load(model_type)
+        self.predictor = LightningInferenceModel(model, preprocess)
+        self.trainer = pl.Trainer(accelerator='auto')
 
     def run(self, frames):
-        batches = math.ceil(len(frames) / self.batch_size)
-        batch_size = min(len(frames), self.batch_size)
-        video_features = torch.empty([0, self.feature_dim], dtype=torch.float16)
+        # PIL images -> torch.Tensor
+        batch = torch.stack([self.predictor.preprocess(frame) for frame in frames])
 
-        # load the model only once
-        if self.model is None:
-            self.model, self.preprocess = openai_clip.load(self.model_type)
+        # dataset
+        batch_size = min(len(batch), self.batch_size)
+        dl = torch.utils.data.DataLoader(batch, batch_size=batch_size)
 
-        for i in range(batches):
-            batch_frames = frames[i * batch_size : (i + 1) * batch_size]
-            batch_preprocessed = torch.stack(
-                [self.preprocess(frame) for frame in batch_frames]
-            )
-            with torch.no_grad():
-                batch_features = self.model.encode_image(batch_preprocessed)
-                batch_features /= batch_features.norm(dim=-1, keepdim=True)
-            video_features = torch.cat((video_features, batch_features))
+        # ⚡ accelerated inference with PyTorch Lightning ⚡
+        batch = self.trainer.predict(self.predictor, dataloaders=dl)
 
-        return video_features
+        # results
+        batch = torch.cat(batch)
+        return batch

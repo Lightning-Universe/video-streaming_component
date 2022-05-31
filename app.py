@@ -31,3 +31,25 @@ class LitApp(L.LightningFlow):
 
 
 app = L.LightningApp(LitApp())
+
+if __name__ == '__main__':
+
+    class PBar:
+        def __init__(self) -> None:
+            self._prog_bar = None
+
+        def _fake_progress_bar(self, current_frame, total_frames):
+            if self._prog_bar is None:
+                self._prog_bar = tqdm(total=total_frames)
+            self._prog_bar.update(1)
+    
+    pb = PBar()
+    lit_video_stream = LitVideoStream(
+        feature_extractor=OpenAIClip(batch_size=256),
+        stream_processor=YouTubeStreamProcessor(),
+        prog_bar_fx=pb._fake_progress_bar,
+        process_every_n_frame=30,
+        num_batch_frames=56
+    )
+
+    lit_video_stream.download(video_url='https://www.youtube.com/watch?v=8SQL4knuDXU')
