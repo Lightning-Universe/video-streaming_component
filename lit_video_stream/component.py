@@ -104,11 +104,13 @@ class LitVideoStream(L.LightningWork):
             """
             raise ValueError(m)
 
+        # allow prog bar to reset
+        self._prog_bar.reset(total_frames)
+        
         # do actual download and online extraction
         current_frame = 0
         unprocessed_frames = []
         features = []
-        self._prog_bar.reset(total_frames)
         while capture.isOpened():
             # update the progress
             self._prog_bar.update(current_frame)
