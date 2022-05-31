@@ -22,7 +22,7 @@ class LitApp(L.LightningFlow):
             feature_extractor=OpenAIClip(batch_size=256),
             stream_processor=YouTubeStreamProcessor(),
             prog_bar_fx=self._pbar.cli_prog_bar,
-            process_every_n_frame=10,
+            process_every_n_frame=100,
             num_batch_frames=256,
         )
 
