@@ -1,9 +1,11 @@
+import imp
 import lightning as L
 import cv2
 from PIL import Image
 import math
 from lit_video_stream.feature_extractors.open_ai import OpenAIClip
 from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
+from typing import List
 
 
 class LitVideoStream(L.LightningWork):
@@ -51,15 +53,33 @@ class LitVideoStream(L.LightningWork):
         self.num_batch_frames = num_batch_frames
         self.features = []
 
-    def download(self, video_url):
-        """Downloads a video and process in real-time"""
-        self.run('download', video_url)
+    def download(self, video_urls: List):
+        """Downloads a set of videos and processes them in real-time
+        
+        Arguments:
+            video_urls: a list of video URLs
+
+        Return:
+            a list with the matching features
+
+        """
+        self.run('download', video_urls)
 
     def run(self, action, *args, **kwargs):
         if action == 'download':
             self._download(*args, **kwargs)
 
-    def _download(self, video_url):
+    def _download(self, video_urls):
+        self.features = []
+
+        # TODO: parallelize each video processing
+        for video_url in video_urls:
+            features = self._get_features(video_url)
+            self.features.append(features)
+            
+        self.features = L.storage.Payload(features)
+    
+    def _get_features(self, video_url):
         # give the user a chance to split streams
         stream_url = self._stream_processor.run(video_url)
 
@@ -80,7 +100,6 @@ class LitVideoStream(L.LightningWork):
 
         # do actual download and online extraction
         current_frame = 0
-        self.features = []
         unprocessed_frames = []
         features = []
         while capture.isOpened():
@@ -111,5 +130,4 @@ class LitVideoStream(L.LightningWork):
         # process any leftover frames
         features.append(self._feature_extractor.run(unprocessed_frames))
         unprocessed_frames = []
-
-        self.features = L.storage.Payload(features)
+        return features

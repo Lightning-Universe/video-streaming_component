@@ -48,11 +48,11 @@ if __name__ == '__main__':
         feature_extractor=OpenAIClip(batch_size=256),
         stream_processor=YouTubeStreamProcessor(),
         prog_bar_fx=pb._fake_progress_bar,
-        process_every_n_frame=30,
+        process_every_n_frame=100,
         num_batch_frames=256,
         length_limit=None
     )
 
     one_hour = 'https://www.youtube.com/watch?v=rru2passumI'
     one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
-    lit_video_stream.download(video_url=one_hour)
+    lit_video_stream.download(video_urls=[one_min, one_min])
