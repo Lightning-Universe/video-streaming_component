@@ -24,27 +24,14 @@ class LitApp(L.LightningFlow):
             feature_extractor=OpenAIClip(batch_size=256),
             stream_processor=YouTubeStreamProcessor(),
             prog_bar=PBar(),
-            process_every_n_frame=100,
+            process_every_n_frame=30,
             num_batch_frames=256,
         )
 
     def run(self):
-        self.lit_video_stream.download(video_url='https://www.youtube.com/watch?v=8SQL4knuDXU')
+        one_hour = 'https://www.youtube.com/watch?v=rru2passumI'
+        one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
+        self.lit_video_stream.download(video_urls=[one_min, one_min])
 
 
 app = L.LightningApp(LitApp())
-
-if __name__ == '__main__':
-    
-    lit_video_stream = LitVideoStream(
-        feature_extractor=OpenAIClip(batch_size=256),
-        stream_processor=YouTubeStreamProcessor(),
-        prog_bar=PBar(),
-        process_every_n_frame=100,
-        num_batch_frames=256,
-        length_limit=None
-    )
-
-    one_hour = 'https://www.youtube.com/watch?v=rru2passumI'
-    one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
-    lit_video_stream.download(video_urls=[one_min, one_min])

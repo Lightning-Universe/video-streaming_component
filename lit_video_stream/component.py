@@ -76,12 +76,12 @@ class LitVideoStream(L.LightningWork):
             self._download(*args, **kwargs)
 
     def _download(self, video_urls):
-        self.features = []
+        features = []
 
         # TODO: parallelize each video processing
         for video_url in video_urls:
             features = self._get_features(video_url)
-            self.features.append(features)
+            features.append(features)
             
         self.features = L.storage.Payload(features)
     

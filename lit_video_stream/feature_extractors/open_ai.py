@@ -17,11 +17,12 @@ class LightningInferenceModel(pl.LightningModule):
 
 
 class OpenAIClip:
-    def __init__(self, model_type='ViT-B/32', batch_size=256, feature_dim=512):
+    def __init__(self, model_type='ViT-B/32', batch_size=256, feature_dim=512, num_workers=1):
         super().__init__()
         self.model_type = model_type
         self.batch_size = batch_size
         self.feature_dim = feature_dim
+        self.num_workers = num_workers
 
         model, preprocess = openai_clip.load(model_type)
         self.predictor = LightningInferenceModel(model, preprocess)
@@ -36,7 +37,7 @@ class OpenAIClip:
 
         # dataset
         batch_size = min(len(batch), self.batch_size)
-        dl = torch.utils.data.DataLoader(batch, batch_size=batch_size, num_workers=8)
+        dl = torch.utils.data.DataLoader(batch, batch_size=batch_size, num_workers=self.num_workers)
 
         # ⚡ accelerated inference with PyTorch Lightning ⚡
         batch = self.trainer.predict(self.predictor, dataloaders=dl)
