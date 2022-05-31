@@ -25,7 +25,7 @@ class OpenAIClip:
 
         model, preprocess = openai_clip.load(model_type)
         self.predictor = LightningInferenceModel(model, preprocess)
-        self.trainer = pl.Trainer(accelerator='auto')
+        self.trainer = pl.Trainer(accelerator='auto', devices=1)
 
     def run(self, frames):
         # PIL images -> torch.Tensor
