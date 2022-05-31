@@ -13,7 +13,8 @@ class LitVideoStream(L.LightningWork):
         stream_processor=None, 
         num_batch_frames=-1,
         process_every_n_frame=1,
-        prog_bar_fx=None
+        prog_bar_fx=None,
+        length_limit=None
     ):
         """Downloads a video from a URL and extracts features using any custom model.
         Includes support for feature extraction in real-time.
@@ -27,6 +28,7 @@ class LitVideoStream(L.LightningWork):
             process_every_n_frame: process every "n" frames. if skip_frames = 0, don't skip frames (ie: process every frame), 
                 if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
             prog_bar_fx: function called with every new frame to update the progress bar.
+            length_limit: limit how long videos can be
         """
         super().__init__()
 
@@ -48,15 +50,15 @@ class LitVideoStream(L.LightningWork):
         self.num_batch_frames = num_batch_frames
         self.features = []
 
-    def download(self, video_url, length_limit=300):
+    def download(self, video_url):
         """Downloads a video and process in real-time"""
-        self.run('download', video_url, length_limit)
+        self.run('download', video_url)
 
     def run(self, action, *args, **kwargs):
         if action == 'download':
             self._download(*args, **kwargs)
 
-    def _download(self, video_url, length_limit):
+    def _download(self, video_url):
         # give the user a chance to split streams
         stream_url = self._stream_processor.run(video_url)
 
@@ -69,9 +71,9 @@ class LitVideoStream(L.LightningWork):
         total_frames = math.ceil(total_frames / self.process_every_n_frame)
 
         # apply video length limit
-        if duration >= length_limit:
+        if self.length_limit and (duration > self.length_limit):
             m = f"""
-            Video length is limited to {length_limit} seconds.
+            Video length is limited to {self.length_limit} seconds.
             """
             raise ValueError(m)
 
