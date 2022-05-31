@@ -25,6 +25,9 @@ class OpenAIClip:
 
         model, preprocess = openai_clip.load(model_type)
         self.predictor = LightningInferenceModel(model, preprocess)
+
+        # PyTorch Lightning does not yet support distributed inference
+        # when it does, use this one:    self.trainer = pl.Trainer(accelerator='auto')
         self.trainer = pl.Trainer(accelerator='auto', devices=1)
 
     def run(self, frames):
