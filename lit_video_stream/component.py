@@ -1,9 +1,11 @@
+import imp
 import lightning as L
 import cv2
 from PIL import Image
 import math
 from lit_video_stream.feature_extractors.open_ai import OpenAIClip
 from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
+from typing import List
 
 
 class LitVideoStream(L.LightningWork):
@@ -13,7 +15,7 @@ class LitVideoStream(L.LightningWork):
         stream_processor=None, 
         num_batch_frames=-1,
         process_every_n_frame=1,
-        prog_bar_fx=None,
+        prog_bar=None,
         length_limit=None,
         **kwargs,
     ):
@@ -28,7 +30,7 @@ class LitVideoStream(L.LightningWork):
                 to download before processing it. If memory constrained on the machine, use smaller batch sizes.
             process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame), 
                 if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
-            prog_bar_fx: function called with every new frame to update the progress bar.
+            prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
         super().__init__(parallel=True, **kwargs)
@@ -44,7 +46,13 @@ class LitVideoStream(L.LightningWork):
         if self.process_every_n_frame < 1:
             raise SystemError(f'process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}')
 
-        self._prog_bar_fx = prog_bar_fx if not None else lambda *x: x
+        class NoPBAR:
+            def update(self, *args):
+                pass
+            def reset(self, *args):
+                pass
+
+        self._prog_bar = prog_bar if prog_bar is not None else NoPBAR()
 
         # nothing mod infinity is ever zero... it means, the whole video will process at once when it's downloaded.
         if num_batch_frames == -1:
@@ -52,15 +60,33 @@ class LitVideoStream(L.LightningWork):
         self.num_batch_frames = num_batch_frames
         self.features = []
 
-    def download(self, video_url):
-        """Downloads a video and process in real-time"""
-        self.run('download', video_url)
+    def download(self, video_urls: List):
+        """Downloads a set of videos and processes them in real-time
+        
+        Arguments:
+            video_urls: a list of video URLs
+
+        Return:
+            a list with the matching features
+
+        """
+        self.run('download', video_urls)
 
     def run(self, action, *args, **kwargs):
         if action == 'download':
             self._download(*args, **kwargs)
 
-    def _download(self, video_url):
+    def _download(self, video_urls):
+        self.features = []
+
+        # TODO: parallelize each video processing
+        for video_url in video_urls:
+            features = self._get_features(video_url)
+            self.features.append(features)
+            
+        self.features = L.storage.Payload(features)
+    
+    def _get_features(self, video_url):
         # give the user a chance to split streams
         stream_url = self._stream_processor.run(video_url)
 
@@ -79,14 +105,16 @@ class LitVideoStream(L.LightningWork):
             """
             raise ValueError(m)
 
+        # allow prog bar to reset
+        self._prog_bar.reset(total_frames)
+        
         # do actual download and online extraction
         current_frame = 0
-        self.features = []
         unprocessed_frames = []
         features = []
         while capture.isOpened():
             # update the progress
-            self._prog_bar_fx(current_frame, total_frames)
+            self._prog_bar.update(current_frame)
 
             # get the frame
             ret, frame = capture.read()
@@ -112,5 +140,4 @@ class LitVideoStream(L.LightningWork):
         # process any leftover frames
         features.append(self._feature_extractor.run(unprocessed_frames))
         unprocessed_frames = []
-
-        self.features = L.storage.Payload(features)
+        return features
