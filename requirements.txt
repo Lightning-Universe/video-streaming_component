@@ -1,0 +1,2 @@
+opencv-python-headless==4.5.5.64
+pytube @ git+https://github.com/tchaton/pytube.git@6c5bb01fd04e446466e06aeff724a2dec41322a6
