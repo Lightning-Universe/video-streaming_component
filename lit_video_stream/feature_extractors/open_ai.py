@@ -32,7 +32,7 @@ class OpenAIClip:
         batch = torch.stack([self.predictor.preprocess(frame) for frame in frames])
 
         # dataset
-        batch_size = min(len(batch), self.batch_size)
+        batch_size = min(len(batch), self.batch_size, num_workers=8)
         dl = torch.utils.data.DataLoader(batch, batch_size=batch_size)
 
         # ⚡ accelerated inference with PyTorch Lightning ⚡

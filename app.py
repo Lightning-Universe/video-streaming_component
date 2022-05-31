@@ -49,7 +49,7 @@ if __name__ == '__main__':
         stream_processor=YouTubeStreamProcessor(),
         prog_bar_fx=pb._fake_progress_bar,
         process_every_n_frame=30,
-        num_batch_frames=56
+        num_batch_frames=256
     )
 
     lit_video_stream.download(video_url='https://www.youtube.com/watch?v=8SQL4knuDXU')
