@@ -2,6 +2,8 @@ import lightning as L
 import cv2
 from PIL import Image
 import math
+from lit_video_stream.feature_extractors.open_ai import OpenAIClip
+from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
 
 
 class LitVideoStream(L.LightningWork):
@@ -29,10 +31,10 @@ class LitVideoStream(L.LightningWork):
         super().__init__()
 
         # we use Open AI clip by default
-        self._feature_extractor = feature_extractor if not None else OpenAIClip()
+        self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
 
         # by default, we just return the input
-        self._stream_processor = stream_processor if not None else NoStreamProcessor()
+        self._stream_processor = stream_processor if stream_processor is not None else NoStreamProcessor()
 
         self.process_every_n_frame = process_every_n_frame
         if self.process_every_n_frame < 1:
