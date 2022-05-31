@@ -32,25 +32,29 @@ class PBar:
     def __init__(self) -> None:
         self._prog_bar = None
 
-    def cli_prog_bar(self, current_frame, total_frames):
-        if self._prog_bar is None:
-            self._prog_bar = tqdm(total=total_frames)
+    def update(self, current_frame):
         self._prog_bar.update(1)
+
+    def reset(self, total_frames):
+        if self._prog_bar is not None:
+            self._prog_bar.close()
+        self._prog_bar = tqdm(total=total_frames)
 
 class LitApp(L.LightningFlow):
     def __init__(self) -> None:
         super().__init__()
-        self._pbar = PBar()
         self.lit_video_stream = LitVideoStream(
             feature_extractor=OpenAIClip(batch_size=256),
             stream_processor=YouTubeStreamProcessor(),
-            prog_bar_fx=self._pbar.cli_prog_bar,
+            prog_bar=PBar(),
             process_every_n_frame=30,
-            num_batch_frames=56
+            num_batch_frames=256,
         )
 
     def run(self):
-        self.lit_video_stream.download(video_url='https://www.youtube.com/watch?v=8SQL4knuDXU')
+        one_hour = 'https://www.youtube.com/watch?v=rru2passumI'
+        one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
+        self.lit_video_stream.download(video_urls=[one_min, one_min])
 
 
 app = L.LightningApp(LitApp())
