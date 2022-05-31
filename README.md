@@ -3,6 +3,7 @@ Extract features from any video while streaming from any internet URL.
 
 - Supports passing in arbitrary feature extractor models.
 - Enables custom stream processors.
+- Any accelerator (GPU/TPU/IPU) (single and multi-device)
 
 ## Supported Feature extractors
 - any vision model from Open AI
@@ -57,5 +58,4 @@ app = L.LightningApp(LitApp())
 ```
 
 ## TODO:
-[ ] Any accelerator (single)   
-[ ] multiple accelerators
+[ ] Multi-node
