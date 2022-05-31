@@ -55,3 +55,7 @@ class LitApp(L.LightningFlow):
 
 app = L.LightningApp(LitApp())
 ```
+
+## TODO:
+[ ] Any accelerator (single)   
+[ ] multiple accelerators
