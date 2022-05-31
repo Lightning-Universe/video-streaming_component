@@ -13,10 +13,8 @@ Extract features from any video while streaming from any video web link.
 - Any video from a URL
 
 ## Install this component
-First, install lit_video_stream (warning: this app has not been officially approved on the lightning gallery):
-
 ```bash
-lightning install component https://github.com/theUser/lit_video_stream
+lightning install component lightning/LAI-lit-video-streaming
 ```
 
 ## Use the component
