@@ -41,6 +41,8 @@ class LitApp(L.LightningFlow):
     def run(self):
         one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
         self.lit_video_stream.download(video_urls=[one_min, one_min])
+        if len(self.lit_video_stream.features) > 0:
+            print('do something with the features')
 
 
 app = L.LightningApp(LitApp())
