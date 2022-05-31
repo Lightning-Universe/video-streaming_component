@@ -1,5 +1,5 @@
 # lit_video_stream component
-Extract features from any video while streaming from any internet URL.
+Extract features from any video while streaming from any video web link.
 
 - Supports passing in arbitrary feature extractor models.
 - Enables custom stream processors.
