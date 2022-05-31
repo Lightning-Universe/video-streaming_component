@@ -26,7 +26,6 @@ import lightning as L
 from lit_video_stream import LitVideoStream
 from lit_video_stream.feature_extractors import OpenAIClip
 from lit_video_stream.stream_processors import YouTubeStreamProcessor
-from tqdm import tqdm
 
 class LitApp(L.LightningFlow):
     def __init__(self) -> None:
