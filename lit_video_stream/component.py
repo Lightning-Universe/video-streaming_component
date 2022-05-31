@@ -16,7 +16,8 @@ class LitVideoStream(L.LightningWork):
         num_batch_frames=-1,
         process_every_n_frame=1,
         prog_bar=None,
-        length_limit=None
+        length_limit=None,
+        **kwargs,
     ):
         """Downloads a video from a URL and extracts features using any custom model.
         Includes support for feature extraction in real-time.
@@ -27,12 +28,12 @@ class LitVideoStream(L.LightningWork):
             stream_processor: A function to extract streams from a video (NOT YET SUPPORTED)
             num_batch_frames: How many frames to use for every "batch" of features being extracted. -1 Waits for the full video
                 to download before processing it. If memory constrained on the machine, use smaller batch sizes.
-            process_every_n_frame: process every "n" frames. if skip_frames = 0, don't skip frames (ie: process every frame), 
+            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame), 
                 if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
             prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
-        super().__init__()
+        super().__init__(parallel=True, **kwargs)
 
         # we use Open AI clip by default
         self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
