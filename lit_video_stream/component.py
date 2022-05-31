@@ -38,6 +38,7 @@ class LitVideoStream(L.LightningWork):
         # by default, we just return the input
         self._stream_processor = stream_processor if stream_processor is not None else NoStreamProcessor()
 
+        self.length_limit = length_limit
         self.process_every_n_frame = process_every_n_frame
         if self.process_every_n_frame < 1:
             raise SystemError(f'process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}')

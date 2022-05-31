@@ -23,7 +23,7 @@ class LitApp(L.LightningFlow):
             stream_processor=YouTubeStreamProcessor(),
             prog_bar_fx=self._pbar.cli_prog_bar,
             process_every_n_frame=10,
-            num_batch_frames=256
+            num_batch_frames=256,
         )
 
     def run(self):
