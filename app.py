@@ -19,11 +19,11 @@ class LitApp(L.LightningFlow):
         super().__init__()
         self._pbar = PBar()
         self.lit_video_stream = LitVideoStream(
-            feature_extractor=OpenAIClip(batch_size=32),
+            feature_extractor=OpenAIClip(batch_size=256),
             stream_processor=YouTubeStreamProcessor(),
             prog_bar_fx=self._pbar.cli_prog_bar,
             process_every_n_frame=10,
-            num_batch_frames=56
+            num_batch_frames=256
         )
 
     def run(self):
