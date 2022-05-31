@@ -44,7 +44,7 @@ class LitApp(L.LightningFlow):
         self.lit_video_stream = LitVideoStream(
             feature_extractor=OpenAIClip(batch_size=256),
             stream_processor=YouTubeStreamProcessor(),
-            prog_bar_fx=self._pbar._fake_progress_bar,
+            prog_bar_fx=self._pbar.cli_prog_bar,
             process_every_n_frame=30,
             num_batch_frames=56
         )
