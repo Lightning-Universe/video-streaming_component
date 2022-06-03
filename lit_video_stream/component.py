@@ -96,8 +96,6 @@ class LitVideoStream(L.LightningWork):
         fps = capture.get(cv2.CAP_PROP_FPS)
         duration = total_frames/fps
 
-        total_frames = math.ceil(total_frames / self.process_every_n_frame)
-
         # apply video length limit
         if self.length_limit and (duration > self.length_limit):
             m = f"""
