@@ -33,7 +33,7 @@ class LitVideoStream(L.LightningWork):
             prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
-        super().__init__(parallel=True, **kwargs)
+        super().__init__(**kwargs)
 
         # we use Open AI clip by default
         self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
@@ -58,7 +58,7 @@ class LitVideoStream(L.LightningWork):
         if num_batch_frames == -1:
             num_batch_frames = float('inf')
         self.num_batch_frames = num_batch_frames
-        self.features = []
+        self._features = {}
 
     def download(self, video_urls: List):
         """Downloads a set of videos and processes them in real-time
@@ -77,14 +77,18 @@ class LitVideoStream(L.LightningWork):
             self._download(*args, **kwargs)
 
     def _download(self, video_urls):
-        features = []
+        features = {}
 
         # TODO: parallelize each video processing
         for video_url in video_urls:
-            features = self._get_features(video_url)
-            features.append(features)
+            frame_features, fps = self._get_features(video_url)
+            features[video_url] = {
+                'frame_features': frame_features,
+                'num_skipped_frames': self.process_every_n_frame,
+                'fps': fps
+            }
             
-        self.features = L.storage.Payload(features)
+        self._features = features
     
     def _get_features(self, video_url):
         # give the user a chance to split streams
@@ -95,6 +99,8 @@ class LitVideoStream(L.LightningWork):
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = capture.get(cv2.CAP_PROP_FPS)
         duration = total_frames/fps
+
+        # total_frames = math.ceil(total_frames / self.process_every_n_frame)
 
         # apply video length limit
         if self.length_limit and (duration > self.length_limit):
@@ -138,4 +144,4 @@ class LitVideoStream(L.LightningWork):
         # process any leftover frames
         features.append(self._feature_extractor.run(unprocessed_frames))
         unprocessed_frames = []
-        return features
+        return features, fps
