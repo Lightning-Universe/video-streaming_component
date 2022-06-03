@@ -1,5 +1,4 @@
 import clip as openai_clip
-from matplotlib.pyplot import text
 import torch
 import pytorch_lightning as pl
 
