@@ -1,4 +1,5 @@
 import clip as openai_clip
+from matplotlib.pyplot import text
 import torch
 import pytorch_lightning as pl
 
@@ -45,3 +46,29 @@ class OpenAIClip:
         # results
         batch = torch.cat(batch)
         return batch
+    
+    def search(self, search_query: str, results_count:int, video_features):
+        video_frame_features = video_features['frame_features']
+        fps = video_features['fps']
+        num_skipped_frames = video_features['num_skipped_frames']
+
+        with torch.no_grad():
+            text_features = self.predictor.model.encode_text(openai_clip.tokenize(search_query))
+            text_features /= text_features.norm(dim=-1, keepdim=True)
+
+        similarities = 100.0 * torch.cat(video_frame_features) @ text_features.T
+        _, best_photo_idx = similarities.topk(results_count, dim=0)
+
+        # frames numbers
+        search_results = best_photo_idx.cpu().numpy().tolist()
+
+        frames_result = [result for sub_list in search_results for result in sub_list]
+
+        results_in_ms = [
+            round(
+                frame * num_skipped_frames / fps * 1000
+            )
+            for frame in frames_result
+        ]
+
+        return results_in_ms
