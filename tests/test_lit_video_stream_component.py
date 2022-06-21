@@ -10,4 +10,4 @@ from lit_video_stream.component import LitVideoStream
 def test_placeholder_component():
     # TODO: improve testing
     video_stream_component = LitVideoStream()
-    video_stream_component.run()
+    assert video_stream_component.features_path == "lit://features.pt"
