@@ -4,10 +4,10 @@ To test a lightning component:
 1. Init the component.
 2. call .run()
 """
-from lit_video_stream.component import TemplateComponent
+from lit_video_stream.component import LitVideoStream
 
 
 def test_placeholder_component():
-    messenger = TemplateComponent()
-    messenger.run()
-    assert messenger.value == 1
+    # TODO: improve testing
+    video_stream_component = LitVideoStream()
+    video_stream_component.run()
