@@ -45,6 +45,7 @@ class LitApp(L.LightningFlow):
         one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
         self.lit_video_stream.download(video_urls=[one_min])
         self.proxy_work.run(self.lit_video_stream.features_path)
+        self._exit("Application End!")
 
 
 app = L.LightningApp(LitApp())
