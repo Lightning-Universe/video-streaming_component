@@ -1,3 +1,5 @@
+import torch
+
 import lightning as L
 from lit_video_stream import LitVideoStream
 from lit_video_stream.feature_extractors import OpenAIClip
@@ -16,6 +18,16 @@ class PBar:
         if self._prog_bar is not None:
             self._prog_bar.close()
         self._prog_bar = tqdm(total=total_frames)
+        
+
+class ProxyWork(L.LightningWork):
+        
+    def run(self, features_path):
+        if features_path.exists_remote():
+            print("Do something cool with the features!")
+            features = torch.load(features_path)
+            print(features)
+
 
 class LitApp(L.LightningFlow):
     def __init__(self) -> None:
@@ -27,12 +39,12 @@ class LitApp(L.LightningFlow):
             process_every_n_frame=30,
             num_batch_frames=256,
         )
+        self.proxy_work = ProxyWork()
 
     def run(self):
         one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
-        self.lit_video_stream.download(video_urls=[one_min, one_min])
-        if len(self.lit_video_stream.features) > 0:
-            print('do something with the features')
+        self.lit_video_stream.download(video_urls=[one_min])
+        self.proxy_work.run(self.lit_video_stream.features_path)
 
 
 app = L.LightningApp(LitApp())

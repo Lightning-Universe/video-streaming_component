@@ -62,7 +62,7 @@ class LitVideoStream(L.LightningWork):
             num_batch_frames = float('inf')
         self.num_batch_frames = num_batch_frames
         
-        self.features = "lit://features/"
+        self.features_path = "lit://features.pt"
 
     def download(self, video_urls: List):
         """Downloads a set of videos and processes them in real-time
@@ -92,8 +92,9 @@ class LitVideoStream(L.LightningWork):
                 'fps': fps
             }
         
-        os.makedirs(self.features, exist_ok=True)
-        torch.save(features, os.path.join(self.features, "features.pt"))
+        if os.path.exists(self.features_path):
+            os.remove(self.features_path)
+        torch.save(features, self.features_path)
     
     def _get_features(self, video_url):
         # give the user a chance to split streams
