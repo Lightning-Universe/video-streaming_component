@@ -1,6 +1,9 @@
+import os
 import torch
 
 import lightning as L
+from lightning_app.storage import Drive
+
 from lit_video_stream import LitVideoStream
 from lit_video_stream.feature_extractors import OpenAIClip
 from lit_video_stream.stream_processors import YouTubeStreamProcessor
@@ -21,9 +24,15 @@ class PBar:
         
 
 class ProxyWork(L.LightningWork):
+    
+    def __init__(self) -> None:
+        super().__init__()
+        self.features_drive = Drive("lit://features")
         
     def run(self, features_path):
-        if features_path.exists_remote():
+        self.features_drive.get(features_path)
+        
+        if os.path.exists(features_path):
             print("Do something cool with the features!")
             features = torch.load(features_path)
             print(features)

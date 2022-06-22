@@ -6,6 +6,7 @@ from PIL import Image
 
 import torch
 
+from lightning_app.storage import Drive
 from lit_video_stream.feature_extractors.open_ai import OpenAIClip
 from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
 from typing import List
@@ -62,7 +63,8 @@ class LitVideoStream(L.LightningWork):
             num_batch_frames = float('inf')
         self.num_batch_frames = num_batch_frames
         
-        self.features_path = "lit://features.pt"
+        self.features_drive = Drive("lit://features")
+        self.features_path = "features.pt"
 
     def download(self, video_urls: List):
         """Downloads a set of videos and processes them in real-time
@@ -95,6 +97,8 @@ class LitVideoStream(L.LightningWork):
         if os.path.exists(self.features_path):
             os.remove(self.features_path)
         torch.save(features, self.features_path)
+        
+        self.features_drive.put(self.features_path)
     
     def _get_features(self, video_url):
         # give the user a chance to split streams
