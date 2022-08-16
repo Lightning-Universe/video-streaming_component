@@ -1,6 +1,6 @@
 import clip as openai_clip
-import torch
 import pytorch_lightning as pl
+import torch
 
 
 class LightningInferenceModel(pl.LightningModule):
@@ -17,7 +17,9 @@ class LightningInferenceModel(pl.LightningModule):
 
 
 class OpenAIClip:
-    def __init__(self, model_type='ViT-B/32', batch_size=256, feature_dim=512, num_workers=1):
+    def __init__(
+        self, model_type="ViT-B/32", batch_size=256, feature_dim=512, num_workers=1
+    ):
         super().__init__()
         self.model_type = model_type
         self.batch_size = batch_size
@@ -29,7 +31,7 @@ class OpenAIClip:
 
         # PyTorch Lightning does not yet support distributed inference
         # when it does, use this one:    self.trainer = pl.Trainer(accelerator='auto')
-        self.trainer = pl.Trainer(accelerator='auto', devices=1)
+        self.trainer = pl.Trainer(accelerator="auto", devices=1)
 
     def run(self, frames):
         # PIL images -> torch.Tensor
@@ -37,7 +39,9 @@ class OpenAIClip:
 
         # dataset
         batch_size = min(len(batch), self.batch_size)
-        dl = torch.utils.data.DataLoader(batch, batch_size=batch_size, num_workers=self.num_workers)
+        dl = torch.utils.data.DataLoader(
+            batch, batch_size=batch_size, num_workers=self.num_workers
+        )
 
         # ⚡ accelerated inference with PyTorch Lightning ⚡
         batch = self.trainer.predict(self.predictor, dataloaders=dl)
@@ -45,14 +49,16 @@ class OpenAIClip:
         # results
         batch = torch.cat(batch)
         return batch
-    
-    def search(self, search_query: str, results_count:int, video_features):
-        video_frame_features = video_features['frame_features']
-        fps = video_features['fps']
-        num_skipped_frames = video_features['num_skipped_frames']
+
+    def search(self, search_query: str, results_count: int, video_features):
+        video_frame_features = video_features["frame_features"]
+        fps = video_features["fps"]
+        num_skipped_frames = video_features["num_skipped_frames"]
 
         with torch.no_grad():
-            text_features = self.predictor.model.encode_text(openai_clip.tokenize(search_query))
+            text_features = self.predictor.model.encode_text(
+                openai_clip.tokenize(search_query)
+            )
             text_features /= text_features.norm(dim=-1, keepdim=True)
 
         similarities = 100.0 * torch.cat(video_frame_features) @ text_features.T
@@ -64,10 +70,7 @@ class OpenAIClip:
         frames_result = [result for sub_list in search_results for result in sub_list]
 
         results_in_ms = [
-            round(
-                frame * num_skipped_frames / fps * 1000
-            )
-            for frame in frames_result
+            round(frame * num_skipped_frames / fps * 1000) for frame in frames_result
         ]
 
         return results_in_ms

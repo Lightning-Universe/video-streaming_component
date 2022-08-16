@@ -67,4 +67,3 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
-        exclude: hackernews_app/contexts/secrets.py

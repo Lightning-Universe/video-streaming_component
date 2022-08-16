@@ -1,27 +1,29 @@
 import imp
-import lightning as L
-import cv2
-from PIL import Image
-from lightning.app.storage import Path
 import pickle
+from typing import List
+
+import cv2
+import lightning as L
+from lightning.app.storage import Path
+from PIL import Image
+
 from lit_video_stream.feature_extractors.open_ai import OpenAIClip
 from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
-from typing import List
 
 
 class LitVideoStream(L.LightningWork):
     def __init__(
-        self, 
-        feature_extractor=None, 
-        stream_processor=None, 
+        self,
+        feature_extractor=None,
+        stream_processor=None,
         num_batch_frames=-1,
         process_every_n_frame=1,
         prog_bar=None,
         length_limit=None,
         **kwargs,
     ):
-        """Downloads a video from a URL and extracts features using any custom model.
-        Includes support for feature extraction in real-time.
+        """Downloads a video from a URL and extracts features using any custom model. Includes support for feature
+        extraction in real-time.
 
         Arguments:
 
@@ -29,7 +31,7 @@ class LitVideoStream(L.LightningWork):
             stream_processor: A function to extract streams from a video (NOT YET SUPPORTED)
             num_batch_frames: How many frames to use for every "batch" of features being extracted. -1 Waits for the full video
                 to download before processing it. If memory constrained on the machine, use smaller batch sizes.
-            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame), 
+            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame),
                 if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
             prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
@@ -37,19 +39,26 @@ class LitVideoStream(L.LightningWork):
         super().__init__(**kwargs)
 
         # we use Open AI clip by default
-        self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
+        self._feature_extractor = (
+            feature_extractor if feature_extractor is not None else OpenAIClip()
+        )
 
         # by default, we just return the input
-        self._stream_processor = stream_processor if stream_processor is not None else NoStreamProcessor()
+        self._stream_processor = (
+            stream_processor if stream_processor is not None else NoStreamProcessor()
+        )
 
         self.length_limit = length_limit
         self.process_every_n_frame = process_every_n_frame
         if self.process_every_n_frame < 1:
-            raise SystemError(f'process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}')
+            raise SystemError(
+                f"process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}"
+            )
 
         class NoPBAR:
             def update(self, *args):
                 pass
+
             def reset(self, *args):
                 pass
 
@@ -57,19 +66,18 @@ class LitVideoStream(L.LightningWork):
 
         # nothing mod infinity is ever zero... it means, the whole video will process at once when it's downloaded.
         if num_batch_frames == -1:
-            num_batch_frames = float('inf')
+            num_batch_frames = float("inf")
         self.num_batch_frames = num_batch_frames
         self.features_path = None
 
     def run(self, video_urls: List):
-        """Downloads a set of videos and processes them in real-time
-        
+        """Downloads a set of videos and processes them in real-time.
+
         Arguments:
             video_urls: a list of video URLs
 
         Return:
             a list with the matching features
-
         """
         features = {}
 
@@ -77,19 +85,19 @@ class LitVideoStream(L.LightningWork):
         for video_url in video_urls:
             frame_features, fps = self._get_features(video_url)
             features[video_url] = {
-                'frame_features': frame_features,
-                'num_skipped_frames': self.process_every_n_frame,
-                'fps': fps
+                "frame_features": frame_features,
+                "num_skipped_frames": self.process_every_n_frame,
+                "fps": fps,
             }
-        
-        with open('features.p', 'wb') as fp:
+
+        with open("features.p", "wb") as fp:
             pickle.dump(features, fp)
-            
+
         # Use lightning.app.storage.Path to create a reference to the features
         # When running in the cloud on multiple machines, by simply passing this reference to another work,
         # it triggers automatically a transfer.
         self.features_path = Path("features.p")
-    
+
     def _get_features(self, video_url):
         # give the user a chance to split streams
         stream_url = self._stream_processor.run(video_url)
@@ -98,7 +106,7 @@ class LitVideoStream(L.LightningWork):
         capture = cv2.VideoCapture(stream_url)
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = capture.get(cv2.CAP_PROP_FPS)
-        duration = total_frames/fps
+        duration = total_frames / fps
 
         # total_frames = math.ceil(total_frames / self.process_every_n_frame)
 
@@ -111,7 +119,7 @@ class LitVideoStream(L.LightningWork):
 
         # allow prog bar to reset
         self._prog_bar.reset(total_frames)
-        
+
         # do actual download and online extraction
         current_frame = 0
         unprocessed_frames = []
@@ -122,7 +130,7 @@ class LitVideoStream(L.LightningWork):
 
             # get the frame
             ret, frame = capture.read()
-            
+
             # add a new frame to process
             if ret:
                 unprocessed_frames.append(Image.fromarray(frame[:, :, ::-1]))
