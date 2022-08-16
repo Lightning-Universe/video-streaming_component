@@ -2,7 +2,8 @@ import imp
 import lightning as L
 import cv2
 from PIL import Image
-import math
+from lightning.app.storage import Path
+import pickle
 from lit_video_stream.feature_extractors.open_ai import OpenAIClip
 from lit_video_stream.stream_processors.no_stream_processor import NoStreamProcessor
 from typing import List
@@ -58,9 +59,9 @@ class LitVideoStream(L.LightningWork):
         if num_batch_frames == -1:
             num_batch_frames = float('inf')
         self.num_batch_frames = num_batch_frames
-        self._features = {}
+        self.features_path = None
 
-    def download(self, video_urls: List):
+    def run(self, video_urls: List):
         """Downloads a set of videos and processes them in real-time
         
         Arguments:
@@ -70,13 +71,6 @@ class LitVideoStream(L.LightningWork):
             a list with the matching features
 
         """
-        self.run('download', video_urls)
-
-    def run(self, action, *args, **kwargs):
-        if action == 'download':
-            self._download(*args, **kwargs)
-
-    def _download(self, video_urls):
         features = {}
 
         # TODO: parallelize each video processing
@@ -87,8 +81,14 @@ class LitVideoStream(L.LightningWork):
                 'num_skipped_frames': self.process_every_n_frame,
                 'fps': fps
             }
+        
+        with open('features.p', 'wb') as fp:
+            pickle.dump(features, fp)
             
-        self._features = features
+        # Use lightning.app.storage.Path to create a reference to the features
+        # When running in the cloud on multiple machines, by simply passing this reference to another work,
+        # it triggers automatically a transfer.
+        self.features_path = Path("features.p")
     
     def _get_features(self, video_url):
         # give the user a chance to split streams

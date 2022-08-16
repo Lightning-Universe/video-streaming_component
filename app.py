@@ -1,4 +1,6 @@
 import lightning as L
+import pickle
+
 from lit_video_stream import LitVideoStream
 from lit_video_stream.feature_extractors import OpenAIClip
 from lit_video_stream.stream_processors import YouTubeStreamProcessor
@@ -29,10 +31,17 @@ class LitApp(L.LightningFlow):
         )
 
     def run(self):
-        one_min = 'https://www.youtube.com/watch?v=8SQL4knuDXU'
-        self.lit_video_stream.download(video_urls=[one_min, one_min])
-        if len(self.lit_video_stream.features) > 0:
-            print('do something with the features')
+        one_min = "https://www.youtube.com/watch?v=8SQL4knuDXU"
+        # 1. Run the Video Streaming component to fetch features
+        self.lit_video_stream.run(video_urls=[one_min])
+        
+        # 2. when the features are available, go ahead with the flow
+        if self.lit_video_stream.features_path:
+            print("Do something with the features!")
+            with open(self.lit_video_stream.features_path, 'rb') as fp:
+                features = pickle.load(fp)
+            print(features)
+            self._exit()
 
 
 app = L.LightningApp(LitApp())
