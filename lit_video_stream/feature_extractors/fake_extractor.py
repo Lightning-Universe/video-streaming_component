@@ -1,11 +1,9 @@
-"""
-Feature extractor used for debugging
-"""
-import torch 
+"""Feature extractor used for debugging."""
+import torch
 from torchvision import transforms
 
 
-class FakeFeatureExtractor(object):
+class FakeFeatureExtractor:
     def run(self, frame_batch):
         tensor_transform = transforms.PILToTensor()
         frame_batch = [tensor_transform(x) for x in frame_batch]
