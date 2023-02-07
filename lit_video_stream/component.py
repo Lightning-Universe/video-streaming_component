@@ -140,7 +140,6 @@ class LitVideoStream(L.LightningWork):
             # process a batch of frames if requested by the user
             # if user said num_batch_frames = -1 then num_batch_frames is +inf which will never be 0
             if len(unprocessed_frames) % self.num_batch_frames == 0:
-
                 # process the frames and clear the frame cache
                 features.append(self._feature_extractor.run(unprocessed_frames))
                 unprocessed_frames = []
