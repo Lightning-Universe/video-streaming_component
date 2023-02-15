@@ -1,4 +1,3 @@
-import imp
 import pickle
 from typing import List
 
@@ -39,21 +38,15 @@ class LitVideoStream(L.LightningWork):
         super().__init__(**kwargs)
 
         # we use Open AI clip by default
-        self._feature_extractor = (
-            feature_extractor if feature_extractor is not None else OpenAIClip()
-        )
+        self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
 
         # by default, we just return the input
-        self._stream_processor = (
-            stream_processor if stream_processor is not None else NoStreamProcessor()
-        )
+        self._stream_processor = stream_processor if stream_processor is not None else NoStreamProcessor()
 
         self.length_limit = length_limit
         self.process_every_n_frame = process_every_n_frame
         if self.process_every_n_frame < 1:
-            raise SystemError(
-                f"process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}"
-            )
+            raise SystemError(f"process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}")
 
         class NoPBAR:
             def update(self, *args):
