@@ -20,7 +20,6 @@ class PBar:
 
 
 if __name__ == "__main__":
-
     lit_video_stream = LitVideoStream(
         feature_extractor=OpenAIClip(batch_size=256),
         stream_processor=YouTubeStreamProcessor(),
