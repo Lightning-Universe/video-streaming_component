@@ -1,4 +1,3 @@
-import imp
 import pickle
 from typing import List
 
@@ -29,31 +28,27 @@ class LitVideoStream(L.LightningWork):
 
             feature_extractor: A LightningFlow that extracts features in its run method (NOT YET SUPPORTED)
             stream_processor: A function to extract streams from a video (NOT YET SUPPORTED)
-            num_batch_frames: How many frames to use for every "batch" of features being extracted. -1 Waits for the full video
-                to download before processing it. If memory constrained on the machine, use smaller batch sizes.
-            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame),
-                if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
+            num_batch_frames: How many frames to use for every "batch" of features being extracted.
+                -1 Waits for the full video to download before processing it. If memory constrained on the machine,
+                use smaller batch sizes.
+            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0,
+                don't skip frames (ie: process every frame), if = 1, then skip every 1 frame,
+                if 2 then process every 2 frames, and so on.
             prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
         super().__init__(**kwargs)
 
         # we use Open AI clip by default
-        self._feature_extractor = (
-            feature_extractor if feature_extractor is not None else OpenAIClip()
-        )
+        self._feature_extractor = feature_extractor if feature_extractor is not None else OpenAIClip()
 
         # by default, we just return the input
-        self._stream_processor = (
-            stream_processor if stream_processor is not None else NoStreamProcessor()
-        )
+        self._stream_processor = stream_processor if stream_processor is not None else NoStreamProcessor()
 
         self.length_limit = length_limit
         self.process_every_n_frame = process_every_n_frame
         if self.process_every_n_frame < 1:
-            raise SystemError(
-                f"process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}"
-            )
+            raise SystemError(f"process_every_n_frame cannot be < 1, you passed in {self.process_every_n_frame}")
 
         class NoPBAR:
             def update(self, *args):
@@ -140,7 +135,6 @@ class LitVideoStream(L.LightningWork):
             # process a batch of frames if requested by the user
             # if user said num_batch_frames = -1 then num_batch_frames is +inf which will never be 0
             if len(unprocessed_frames) % self.num_batch_frames == 0:
-
                 # process the frames and clear the frame cache
                 features.append(self._feature_extractor.run(unprocessed_frames))
                 unprocessed_frames = []
