@@ -28,10 +28,12 @@ class LitVideoStream(L.LightningWork):
 
             feature_extractor: A LightningFlow that extracts features in its run method (NOT YET SUPPORTED)
             stream_processor: A function to extract streams from a video (NOT YET SUPPORTED)
-            num_batch_frames: How many frames to use for every "batch" of features being extracted. -1 Waits for the full video
-                to download before processing it. If memory constrained on the machine, use smaller batch sizes.
-            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0, don't skip frames (ie: process every frame),
-                if = 1, then skip every 1 frame, if 2 then process every 2 frames, and so on.
+            num_batch_frames: How many frames to use for every "batch" of features being extracted.
+                -1 Waits for the full video to download before processing it. If memory constrained on the machine,
+                use smaller batch sizes.
+            process_every_n_frame: process every "n" frames. if process_every_n_frame = 0,
+                don't skip frames (ie: process every frame), if = 1, then skip every 1 frame,
+                if 2 then process every 2 frames, and so on.
             prog_bar: A class that implements 2 methods: update and reset.
             length_limit: limit how long videos can be
         """
