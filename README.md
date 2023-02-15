@@ -109,10 +109,10 @@ For example, this feature extractor uses Open AI + PyTorch Lightning to accelera
 ```python
 import clip as openai_clip
 import torch
-import lightning as L
+import pytorch_lightning as pl
 
 
-class LightningInferenceModel(L.LightningModule):
+class LightningInferenceModel(pl.LightningModule):
     def __init__(self, model, preprocess) -> None:
         super().__init__()
         self.model = model
@@ -140,7 +140,7 @@ class OpenAIClip:
 
         # PyTorch Lightning does not yet support distributed inference
         # when it does, use this one:    self.trainer = pl.Trainer(accelerator='auto')
-        self.trainer = L.Trainer(accelerator="auto", devices=1)
+        self.trainer = pl.Trainer(accelerator="auto", devices=1)
 
     def run(self, frames):
         # PIL images -> torch.Tensor
