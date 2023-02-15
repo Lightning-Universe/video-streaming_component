@@ -1,4 +1,5 @@
 lightning>=1.9.0, <2.0.0
+pytorch-lightning==1.8.*
 opencv-python-headless==4.5.5.64
 pytube @ git+https://github.com/kaushikb11/pytube.git@717ef339383ac15ff79f92c310908d4d843e6d90
 clip @ git+https://github.com/openai/CLIP.git@b46f5ac7587d2e1862f8b7b1573179d80dcdd620
