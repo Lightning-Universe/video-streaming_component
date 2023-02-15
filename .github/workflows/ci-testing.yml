@@ -37,7 +37,7 @@ jobs:
       shell: bash
 
     - name: Tests
-      run: coverage run --source lit_video_stream -m py.test lit_video_stream tests -v
+      run: coverage run --source lit_video_stream -m pytest lit_video_stream tests -v
 
     - name: Statistics
       run: coverage report
