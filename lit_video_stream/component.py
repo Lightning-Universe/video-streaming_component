@@ -100,7 +100,7 @@ class LitVideoStream(L.LightningWork):
         # use cv2 to load video details for downloading
         capture = cv2.VideoCapture(stream_url)
         total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        fps = capture.get(cv2.CAP_PROP_FPS)
+        fps = capture.get(cv2.CAP_PROP_FPS) or 24
         duration = total_frames / fps
 
         # total_frames = math.ceil(total_frames / self.process_every_n_frame)
